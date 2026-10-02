@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useRouteError } from 'react-router-dom';
 
-import { CopyButton } from '@/components/custom/clipboard/copy-button';
 import { Button } from '@/components/ui/button';
 import { errorReporting } from '@/lib/error-reporting';
 
@@ -85,14 +84,8 @@ const ErrorFallbackContent = ({
               : t('Show technical details')}
           </button>
           {showDetails && (
-            <div className="relative w-full text-left">
-              <CopyButton
-                textToCopy={buildDiagnosticsText(error, componentStack)}
-                variant="ghost"
-                withoutTooltip
-                className="absolute right-2 top-2 size-7 text-muted-foreground"
-              />
-              <pre className="max-h-56 overflow-auto rounded-lg border bg-muted/40 p-4 pr-12 font-mono text-xs leading-relaxed text-muted-foreground whitespace-pre-wrap break-words">
+            <div className="w-full text-left">
+              <pre className="max-h-56 overflow-auto rounded-lg border bg-muted/40 p-4 font-mono text-xs leading-relaxed text-muted-foreground whitespace-pre-wrap break-words">
                 {buildDiagnosticsText(error, componentStack)}
               </pre>
             </div>
