@@ -5,16 +5,17 @@ import { FlowVersion } from '../flow-version'
 import { SampleDataSettings } from '../sample-data'
 import { FlowTrigger, FlowTriggerType } from '../triggers/trigger'
 import { flowStructureUtil } from '../util/flow-structure-util'
+import { isDisplayNameOnlyUpdate } from './display-name-only-update'
 import { UpdateTriggerRequest } from '.'
 
 
-function createTrigger(name: string, request: UpdateTriggerRequest, nextAction: FlowAction | undefined, existingSampleData: SampleDataSettings | undefined): FlowTrigger {
+function createTrigger(name: string, request: UpdateTriggerRequest, nextAction: FlowAction | undefined, existingSampleData: SampleDataSettings | undefined, lastUpdatedDate: string): FlowTrigger {
     const baseProperties = {
         displayName: request.displayName,
         name,
         valid: false,
         nextAction,
-        lastUpdatedDate: dayjs().toISOString(),
+        lastUpdatedDate,
     }
     let trigger: FlowTrigger
     switch (request.type) {
@@ -44,7 +45,10 @@ function createTrigger(name: string, request: UpdateTriggerRequest, nextAction: 
 function _updateTrigger(flowVersion: FlowVersion, request: UpdateTriggerRequest): FlowVersion {
     const trigger = flowStructureUtil.getStepOrThrow(request.name, flowVersion.trigger)
     const existingSampleData = trigger.type === FlowTriggerType.PIECE ? trigger.settings.sampleData : undefined
-    const updatedTrigger = createTrigger(request.name, request, trigger.nextAction, existingSampleData)
+    const lastUpdatedDate = isDisplayNameOnlyUpdate(trigger, request) && !isNil(trigger.lastUpdatedDate)
+        ? trigger.lastUpdatedDate
+        : dayjs().toISOString()
+    const updatedTrigger = createTrigger(request.name, request, trigger.nextAction, existingSampleData, lastUpdatedDate)
     const next = flowStructureUtil.transferFlow(flowVersion, (parentStep) => {
         if (parentStep.name === request.name) {
             return updatedTrigger

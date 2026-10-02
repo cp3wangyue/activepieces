@@ -3,6 +3,7 @@ import { isNil } from '@activepieces/core-utils'
 import { FlowAction, FlowActionType, SingleActionSchema } from '../actions/action'
 import { FlowVersion } from '../flow-version'
 import { flowStructureUtil } from '../util/flow-structure-util'
+import { isDisplayNameOnlyUpdate } from './display-name-only-update'
 import { UpdateActionRequest } from './index'
 
 function _updateAction(flowVersion: FlowVersion, request: UpdateActionRequest): FlowVersion {
@@ -11,12 +12,15 @@ function _updateAction(flowVersion: FlowVersion, request: UpdateActionRequest): 
             return stepToUpdate
         }
 
+        const displayNameOnlyUpdate = isDisplayNameOnlyUpdate(stepToUpdate, request)
         const baseProps: Omit<FlowAction, 'type'> = {
             displayName: request.displayName,
             name: request.name,
             valid: false,
             skip: request.skip,
-            lastUpdatedDate: dayjs().toISOString(),
+            lastUpdatedDate: displayNameOnlyUpdate && !isNil(stepToUpdate.lastUpdatedDate)
+                ? stepToUpdate.lastUpdatedDate
+                : dayjs().toISOString(),
             settings: {
                 ...stepToUpdate.settings,
                 customLogoUrl: request.settings.customLogoUrl,
